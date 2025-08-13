@@ -1,6 +1,5 @@
 import { NextResponse, NextRequest } from "next/server";
 import { getToken } from "next-auth/jwt";
-import { auth } from "./app/api/auth/[...nextauth]/options";
 
 const PUBLIC_ROUTES = ["/", "/sign-in", "/sign-up"];
 

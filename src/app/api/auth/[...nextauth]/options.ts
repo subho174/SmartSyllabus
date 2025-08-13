@@ -10,6 +10,12 @@ import UserModel from "@/src/models/user.model";
 import { IUser } from "@/src/types/user";
 
 type extendedUser = IUser & { isLoggingIn: string };
+class CustomError extends CredentialsSignin {
+  constructor(msg: string) {
+    super();
+    this.code = msg;
+  }
+}
 
 export const { handlers, auth } = NextAuth({
   providers: [
@@ -38,31 +44,22 @@ export const { handlers, auth } = NextAuth({
         try {
           const { username, email, password, isLoggingIn } =
             credentials as extendedUser;
-          const error = new CredentialsSignin();
 
           await connectDB();
           let user = await UserModel.findOne({ email }).select("+password");
 
           if (isLoggingIn === "true") {
-            if (!user) {
-              error.code = "User not found";
-              throw error;
-            }
+            if (!user) throw new CustomError("User not found");
 
             const isPasswordCorrect = await bcrypt.compare(
               password as string,
               user.password!
             );
 
-            if (!isPasswordCorrect) {
-              error.code = "Incorrect Password";
-              throw error;
-            }
+            if (!isPasswordCorrect) throw new CustomError("Incorrect password");
           } else {
-            if (user) {
-              error.code = "User already exists. Please Login";
-              throw error;
-            }
+            if (user)
+              throw new CustomError("User already exists. Please Login");
 
             user = await UserModel.create({
               username,
@@ -78,15 +75,12 @@ export const { handlers, auth } = NextAuth({
           };
         } catch (error) {
           console.log(error);
-          const credentiaslError = new CredentialsSignin();
           if (error instanceof CredentialsSignin) throw error;
-          if (error instanceof Error) {
-            credentiaslError.code = error.message;
-            throw credentiaslError;
-          }
-          credentiaslError.code =
-            "An unexpected error occurred. Please try again.";
-          throw credentiaslError;
+          if (error instanceof Error) throw new CustomError(error.message);
+
+          throw new CustomError(
+            "An unexpected error occurred. Please try again."
+          );
         }
       },
     }),
@@ -96,6 +90,7 @@ export const { handlers, auth } = NextAuth({
       let authType;
       try {
         const { user, account } = params;
+        const { name, email } = user;
 
         await connectDB();
 
@@ -107,14 +102,14 @@ export const { handlers, auth } = NextAuth({
         if (!authType)
           return `/${authType}?code=Type of Authentication not found`;
 
-        const existingUser = await UserModel.findOne({ email: user.email });
+        const existingUser = await UserModel.findOne({ email });
 
         if (authType === "sign-up") {
           if (existingUser) return `/${authType}?code=User already exists`;
 
           const newUser = await UserModel.create({
-            username: user.name,
-            email: user.email,
+            username: name,
+            email,
           });
 
           user.id = newUser._id!.toString();

@@ -9,7 +9,7 @@ export const SignUpButtons = () => {
         className="w-full"
         onClick={async () => {
           document.cookie = "authType=sign-up; path=/";
-          await signIn("github", { callbackUrl: "/chat", type: "signup" });
+          await signIn("github", { callbackUrl: "/dashboard", type: "signup" });
         }}
       >
         <Github />
@@ -19,7 +19,7 @@ export const SignUpButtons = () => {
         className="w-full"
         onClick={async () => {
           document.cookie = "authType=sign-up; path=/";
-          await signIn("google", { callbackUrl: "/chat", type: "signup" });
+          await signIn("google", { callbackUrl: "/dashboard", type: "signup" });
         }}
       >
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="-10 -8 40 40">

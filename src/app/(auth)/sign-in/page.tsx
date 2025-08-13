@@ -1,4 +1,4 @@
-import { SignInForm } from "@/src/components/SignInForm";
+import { SignInForm } from "@/src/components/forms/auth/SignInForm";
 
 export default async function LoginPage({
   searchParams,

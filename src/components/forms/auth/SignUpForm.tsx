@@ -3,53 +3,61 @@
 import { signIn } from "next-auth/react";
 import { useEffect, useTransition } from "react";
 import Link from "next/link";
-import { toast } from "sonner";
 import { Button, Card, CardBody, CardHeader, cn, Input } from "@heroui/react";
+import { SignUpButtons } from "./SignUpButtons";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { signInSchema, signInSchemaType } from "../schemas/signInSchema";
-import SignInButtons from "./SignInButtons";
-import HomeLink from "./HomeLink";
+import { signUpSchema, signUpSchemaType } from "../../../schemas/signUpSchema";
+import HomeLink from "../../HomeLink";
+import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 
-export function SignInForm({
+export function SignUpForm({
   errorMessage,
   ...props
 }: {
   errorMessage?: string;
 }) {
   const [isPending, startTransition] = useTransition();
+  const router = useRouter();
 
-  useEffect(() => {
-    if (errorMessage) toast.error(errorMessage);
-  }, [errorMessage]);
+  const signUp = (data: signUpSchemaType) => {
+    startTransition(async () => {
+      const res = await signIn("credentials", {
+        callbackUrl: "/dashboard",
+        ...data,
+        isLoggingIn: false,
+        redirect: false,
+      });
 
-  const form = useForm<signInSchemaType>({
-    resolver: zodResolver(signInSchema),
+      if (res.error) toast.error(res.code);
+      else if (res?.url) router.replace("/dashboard");
+
+    });
+  };
+
+  const form = useForm({
+    resolver: zodResolver(signUpSchema),
     defaultValues: {
+      username: "",
       email: "",
       password: "",
     },
   });
 
-  const logIn = async (data: signInSchemaType) => {
-    startTransition(async () => {
-      await signIn("credentials", {
-        callbackUrl: "/chat",
-        ...data,
-        isLoggingIn: true,
-      });
-    });
-  };
+  useEffect(() => {
+    if (errorMessage) toast.error(errorMessage);
+  }, [errorMessage]);
 
   return (
     <div className={cn("flex flex-col gap-6")} {...props}>
       <Card>
         <CardHeader className="text-center">
-          <p className="text-xl text-white">Welcome back</p>
+          <p className="text-xl text-white">Create an Account</p>
         </CardHeader>
         <CardBody>
-          <SignInButtons />
-          <form onSubmit={form.handleSubmit(logIn)}>
+          <SignUpButtons />
+          <form onSubmit={form.handleSubmit(signUp)}>
             <div className="grid gap-6">
               <div className="relative text-center text-sm after:absolute after:inset-0 after:top-1/2 after:z-0 after:flex after:items-center after:border-t after:border-border">
                 <span className="relative z-10 bg-[#1f1f1f] px-2 text-white">
@@ -57,6 +65,28 @@ export function SignInForm({
                 </span>
               </div>
               <div className="grid gap-6">
+                <Controller
+                  control={form.control}
+                  name="username"
+                  render={({
+                    field: { name, value, onChange, onBlur, ref },
+                    fieldState: { invalid, error },
+                  }) => (
+                    <Input
+                      ref={ref}
+                      isRequired
+                      errorMessage={error?.message}
+                      validationBehavior="aria"
+                      isInvalid={invalid}
+                      label="Username"
+                      name={name}
+                      value={value}
+                      onBlur={onBlur}
+                      onChange={onChange}
+                    />
+                  )}
+                  rules={{ required: "Username is required." }}
+                />
                 <Controller
                   control={form.control}
                   name="email"
@@ -95,6 +125,7 @@ export function SignInForm({
                       isInvalid={invalid}
                       label="Password"
                       name={name}
+                      type="password"
                       value={value}
                       onBlur={onBlur}
                       onChange={onChange}
@@ -105,19 +136,20 @@ export function SignInForm({
                 <Button
                   type="submit"
                   className="w-full"
-                  isDisabled={isPending}
+                  //   variant="custom"
                   isLoading={isPending}
+                  isDisabled={isPending}
                 >
-                  {isPending ? "Authenticating..." : "Login"}
+                  {isPending ? "Just a moment..." : "Sign Up"}
                 </Button>
               </div>
-              <div className="text-center text-white text-sm">
-                Don't have an account ?{" "}
+              <div className="text-center text-sm text-white">
+                Already have an account ?{" "}
                 <Link
-                  href="/sign-up"
+                  href="/sign-in"
                   className="font-medium underline underline-offset-4 text-[#fbaf03]"
                 >
-                  Sign up
+                  LogIn
                 </Link>
               </div>
             </div>

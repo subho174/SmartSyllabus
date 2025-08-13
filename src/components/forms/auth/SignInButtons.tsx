@@ -10,7 +10,7 @@ const SignInButtons = () => {
         className="w-full"
         onClick={async () => {
           document.cookie = "authType=sign-in; path=/";
-          signIn("github", { callbackUrl: "/chat", type: "signin" });
+          signIn("github", { callbackUrl: "/dashboard", type: "signin" });
         }}
       >
         <Github />
@@ -20,7 +20,7 @@ const SignInButtons = () => {
         className="w-full"
         onClick={async () => {
           document.cookie = "authType=sign-in; path=/";
-          await signIn("google", { callbackUrl: "/chat", type: "signin" });
+          await signIn("google", { callbackUrl: "/dashboard", type: "signin" });
         }}
       >
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="-10 -8 40 40">

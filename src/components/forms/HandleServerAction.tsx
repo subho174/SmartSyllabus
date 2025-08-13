@@ -11,25 +11,22 @@ import {
   ModalFooter,
   Button,
   useDisclosure,
-  Input,
 } from "@heroui/react";
-import { Controller, useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { courseSchema, courseSchemaType } from "../schemas/courseSchema";
-
+import { FieldValues, type UseFormReturn } from "react-hook-form";
 export interface initialStateType {
   message: string;
   status: number;
   // data?: ITask[];
 }
 
-interface PropsType {
+interface PropsType<FormDataType extends FieldValues> {
   children?: React.ReactNode;
   // className?: string
   submitFunction: (
     prevState: initialStateType,
     formData: FormData
   ) => Promise<initialStateType>;
+  form: UseFormReturn<FormDataType>,
   modalHeaderText: string;
   btnText: string;
   loadingBtnText: string;
@@ -37,17 +34,17 @@ interface PropsType {
   // initialState: initialStateType;
 }
 
-export default function HandleServerAction({
+export default function HandleServerAction<FormDataType extends FieldValues>({
   children,
   submitFunction,
+  form,
   modalHeaderText,
   btnText,
   loadingBtnText,
-}: PropsType) {
+}: PropsType<FormDataType>) {
   const initialState: initialStateType = {
     message: "",
     status: 0,
-    // data: [{ title: "" }],
   };
 
   const [state, formAction, isPending] = useActionState(
@@ -74,14 +71,8 @@ export default function HandleServerAction({
   }, [state]);
 
   const { isOpen, onOpen, onOpenChange } = useDisclosure();
-  const form = useForm<courseSchemaType>({
-    resolver: zodResolver(courseSchema),
-    defaultValues: {
-      title: "",
-    },
-  });
 
-  const submitForm = async (data: courseSchemaType) => {
+  const submitForm = async (data: FormDataType) => {
     const formData = new FormData();
     Object.entries(data).forEach(([key, value]) => formData.append(key, value));
     startTransition(() => formAction(formData));
@@ -100,28 +91,7 @@ export default function HandleServerAction({
                 {modalHeaderText}
               </ModalHeader>
               <ModalBody>
-                <Controller
-                  control={form.control}
-                  name="title"
-                  render={({
-                    field: { name, value, onChange, onBlur, ref },
-                    fieldState: { invalid, error },
-                  }) => (
-                    <Input
-                      ref={ref}
-                      isRequired
-                      errorMessage={error?.message}
-                      validationBehavior="aria"
-                      isInvalid={invalid}
-                      label="Title"
-                      name={name}
-                      value={value}
-                      onBlur={onBlur}
-                      onChange={onChange}
-                    />
-                  )}
-                  rules={{ required: "Course title is required." }}
-                />
+                {children}
               </ModalBody>
               <ModalFooter>
                 <Button

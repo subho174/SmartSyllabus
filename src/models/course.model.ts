@@ -1,13 +1,13 @@
 import { model, Model, models, Schema } from "mongoose";
-import { ICourse } from "../types/course";
+import { CourseDocument } from "../types/course";
 
-const courseSchema: Schema<ICourse> = new Schema({
+const courseSchema: Schema<CourseDocument> = new Schema({
   title: {
     type: String,
     trim: true,
     minlength: 3,
     match: /^[a-zA-Z0-9\s]+$/,
-    required: [true, "course title is required"],
+    required: [true, "Course title is required"],
   },
   createdBy: {
     type: Schema.Types.ObjectId,
@@ -16,6 +16,7 @@ const courseSchema: Schema<ICourse> = new Schema({
 });
 
 const Course =
-  (models.Course as Model<ICourse>) || model<ICourse>("Course", courseSchema);
+  (models.Course as Model<CourseDocument>) ||
+  model<CourseDocument>("Course", courseSchema);
 
 export default Course;
