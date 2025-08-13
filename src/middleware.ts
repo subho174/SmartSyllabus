@@ -11,10 +11,10 @@ export async function middleware(req: NextRequest) {
     secret: process.env.NEXTAUTH_SECRET,
     cookieName:
       process.env.NODE_ENV === "production"
-        ? "__Secure-next-auth.session-token"
-        : "next-auth.session-token",
+        ? "__Secure-authjs.session-token"
+        : "authjs.session-token",
   });
-  
+
   console.log(token);
   console.log("COOKIES:", req.cookies.getAll());
 
