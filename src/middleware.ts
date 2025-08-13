@@ -7,6 +7,7 @@ export async function middleware(req: NextRequest) {
   const path = req.nextUrl.pathname;
 
   const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
+  console.log(token);
 
   if (!PUBLIC_ROUTES.includes(path) && !token)
     return NextResponse.redirect(new URL("/sign-in", req.url));
@@ -16,5 +17,6 @@ export async function middleware(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/((?!_next|favicon.ico|api|.*\\..*).*)"],
+  // matcher: ["/((?!_next|favicon.ico|api|.*\\..*).*)"],
+  matcher: ["/((?!_next/static|_next/image|favicon.ico|api/auth).*)"],
 };
