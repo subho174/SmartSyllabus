@@ -6,7 +6,15 @@ const PUBLIC_ROUTES = ["/", "/sign-in", "/sign-up"];
 export async function middleware(req: NextRequest) {
   const path = req.nextUrl.pathname;
 
-  const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
+  const token = await getToken({
+    req,
+    secret: process.env.NEXTAUTH_SECRET,
+    cookieName:
+      process.env.NODE_ENV === "production"
+        ? "__Secure-next-auth.session-token"
+        : "next-auth.session-token",
+  });
+  
   console.log(token);
   console.log("COOKIES:", req.cookies.getAll());
 
