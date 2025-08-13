@@ -14,11 +14,12 @@ export default async function Dashboard() {
   let courses: ICourse[] = [];
 
   try {
-    const user = (await getAuthenticatedUser()) ?? redirect("/sign-in");
+    const user = await getAuthenticatedUser() 
+    // ?? redirect("/sign-in");
 
     await connectDB();
 
-    courses = await Course.find({ createdBy: user.id }).select("title").lean();
+    courses = await Course.find({ createdBy: user?.id }).select("title").lean();
   } catch (error) {
     console.error(error);
   }

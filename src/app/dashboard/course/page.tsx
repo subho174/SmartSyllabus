@@ -4,6 +4,7 @@ import connectDB from "@/src/db/connectDB";
 import Topic from "@/src/models/topic.model";
 import getAuthenticatedUser from "@/src/utils/getAuthenticatedUser";
 import { redirect } from "next/navigation";
+import { ITopic } from "@/src/types/topic";
 
 export default async function CourseDetailPage({
   searchParams,
@@ -14,11 +15,11 @@ export default async function CourseDetailPage({
   //   { id: "1", title: "Binary Trees", status: "in_progress" },
   //   { id: "2", title: "Graphs", status: "not_started" },
   // ];
-  let topics;
+  let topics: ITopic[] = [];
   const { courseId } = await searchParams;
 
   try {
-    (await getAuthenticatedUser()) ?? redirect("/sign-in");
+    // (await getAuthenticatedUser()) ?? redirect("/sign-in");
 
     await connectDB();
 
@@ -38,7 +39,7 @@ export default async function CourseDetailPage({
         {topics?.map((topic) => (
           <TopicCard
             key={topic._id}
-            topic={{ ...topic, _id: topic._id.toString() }}
+            topic={{ ...topic, _id: topic._id!.toString() }}
           />
         ))}
       </div>
