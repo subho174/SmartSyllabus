@@ -5,14 +5,20 @@ import { QuizPanel } from "@/src/components/cards/QuizPanel";
 import { SummaryPanel } from "@/src/components/cards/SummaryPanel";
 import { Tabs, Tab } from "@heroui/react";
 
-export default function TopicDetailPage({ topicId }: { topicId: string }) {
+export default function TopicDetailPage({
+  topicId,
+  title,
+}: {
+  topicId: string;
+  title: string;
+}) {
   return (
     <div className="p-4">
-      <h2 className="text-2xl font-semibold mb-4">Topic Title</h2>
+      <h2 className="text-2xl font-semibold mb-4">{title}</h2>
 
       <Tabs aria-label="Options">
         <Tab key="summary" title="AI Summary">
-          <SummaryPanel />
+          <SummaryPanel topicId={topicId} title={title} />
         </Tab>
         <Tab key="flashcards" title="Flashcards">
           <FlashcardPanel />

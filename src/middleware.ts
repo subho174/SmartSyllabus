@@ -15,9 +15,6 @@ export async function middleware(req: NextRequest) {
         : "authjs.session-token",
   });
 
-  console.log(token);
-  console.log("COOKIES:", req.cookies.getAll());
-
   if (!PUBLIC_ROUTES.includes(path) && !token)
     return NextResponse.redirect(new URL("/sign-in", req.url));
 
@@ -26,6 +23,5 @@ export async function middleware(req: NextRequest) {
 }
 
 export const config = {
-  // matcher: ["/((?!_next|favicon.ico|api|.*\\..*).*)"],
   matcher: ["/((?!_next/static|_next/image|favicon.ico|api/auth).*)"],
 };

@@ -1,6 +1,6 @@
 export interface ITopic {
   _id?: string;
-  courseId: mongoose.Types.ObjectId | string;
+  courseId?: mongoose.Types.ObjectId | string;
   title: string;
   status: "Not started" | "In progress" | "Completed";
 }

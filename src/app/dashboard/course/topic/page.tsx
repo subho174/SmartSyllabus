@@ -3,9 +3,9 @@ import TopicDetailPage from "./TopicDetailPage";
 export default async function TopicDetailWrapper({
   searchParams,
 }: {
-  searchParams: Promise<{ topicId: string }>;
+  searchParams: Promise<{ topicId: string; title: string }>;
 }) {
-  const { topicId } = await searchParams;
+  const { topicId, title } = await searchParams;
 
-  return <TopicDetailPage topicId={topicId} />;
+  return <TopicDetailPage topicId={topicId} title={title} />;
 }

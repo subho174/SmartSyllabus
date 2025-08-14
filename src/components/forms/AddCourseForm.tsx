@@ -2,7 +2,7 @@
 
 import HandleServerAction from "@/src/components/forms/HandleServerAction";
 import { courseSchema, CourseSchemaType } from "@/src/schemas/courseSchema";
-import { addCourse } from "@/src/server-action/server";
+import { addCourse } from "@/src/actions/server";
 import { Input } from "@heroui/input";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Controller, useForm } from "react-hook-form";
