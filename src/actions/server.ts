@@ -6,13 +6,14 @@ import Topic from "../models/topic.model";
 import { courseSchema } from "../schemas/courseSchema";
 import getAuthenticatedUser from "../utils/getAuthenticatedUser";
 import { topicSchema } from "../schemas/topicSchema";
-import serverWrapper from "../utils/serverWrapper";
 import OpenAI from "openai";
 import { ISummary } from "../types/summary";
 import Summary from "../models/summary.model";
 import { initialStateType } from "../components/forms/HandleServerAction";
+import formActionWrapper from "../utils/formActionWrapper";
+import serverActionWrapper from "../utils/serverActionWrapper";
 
-export const addCourse = serverWrapper(async (prevState, formData) => {
+export const addCourse = formActionWrapper(async (prevState, formData) => {
   const user = await getAuthenticatedUser();
   if (!user) return { status: 401, message: "Unauthorized. Please Login" };
 
@@ -32,7 +33,7 @@ export const addCourse = serverWrapper(async (prevState, formData) => {
   return { status: 201, message: "Created new course successfully" };
 });
 
-export const addTopic = serverWrapper(async (prevState, formData) => {
+export const addTopic = formActionWrapper(async (prevState, formData) => {
   const user = await getAuthenticatedUser();
   if (!user) return { status: 401, message: "Unauthorized. Please Login" };
 
@@ -77,7 +78,10 @@ Return ONLY JSON in the following format:
       messages: [{ role: "user", content: prompt }],
     });
 
-    return JSON.parse(response.choices[0]?.message?.content || "{}");
+    return JSON.parse(
+      response.choices[0]?.message?.content ||
+        '{"keyPoints": [], "takeAways": []}'
+    );
   } catch (err) {
     console.error("Error generating summary:", err);
     return {
@@ -87,35 +91,48 @@ Return ONLY JSON in the following format:
   }
 };
 
-export const saveSummary = async (
-  summary: ISummary,
-  topicId: string
-  // summaryId: string
-): Promise<initialStateType> => {
-  try {
-    await connectDB();
+export const saveSummary = serverActionWrapper(
+  async (
+    summary: ISummary,
+    topicId: string
+    // summaryId: string
+  ): Promise<initialStateType> => {
+    try {
+      await connectDB();
 
-    // if summaryId is recieved , wishes to update summary, otherwise save new summary
+      const newSummary = await Summary.create({ ...summary, topicId });
+      if (!newSummary)
+        return { status: 400, message: "Failed to save summary" };
 
-    if (summary._id) {
-      const updatedSummary = await Summary.findByIdAndUpdate(
-        summary._id,
-        { ...summary, topicId },
-        { new: true }
-      );
+      const { _id, keyPoints, takeAways } = newSummary;
 
-      if (!updatedSummary)
-        return { status: 400, message: "Failed to update summary" };
-
-      return { status: 200, message: "Successfully updated summary" };
+      return {
+        status: 201,
+        message: "Successfully saved summary",
+        data: { _id: _id.toString(), keyPoints, takeAways },
+      };
+    } catch (error) {
+      console.error(error);
+      return { status: 500, message: "Internal Server Error" };
     }
+  }
+);
 
-    const newSummary = await Summary.create({ ...summary, topicId });
-    if (!newSummary) return { status: 400, message: "Failed to save summary" };
+export const deleteSummary = serverActionWrapper(async (summaryId: string) => {
+  try {
+    const deletedSummary = await Summary.findByIdAndDelete(summaryId);
+    if (!deletedSummary)
+      return { status: 400, message: "Failed to delete summary" };
 
-    return { status: 201, message: "Successfully saved summary" };
+    const { _id, keyPoints, takeAways } = deletedSummary;
+
+    return {
+      status: 200,
+      message: "Successfully deleted summary",
+      data: { _id: _id.toString(), keyPoints, takeAways },
+    };
   } catch (error) {
     console.error(error);
     return { status: 500, message: "Internal Server Error" };
   }
-};
+});

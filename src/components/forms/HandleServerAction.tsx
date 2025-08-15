@@ -13,10 +13,11 @@ import {
   useDisclosure,
 } from "@heroui/react";
 import { FieldValues, type UseFormReturn } from "react-hook-form";
+import { ISummary } from "@/src/types/summary";
 export interface initialStateType {
   message: string;
   status: number;
-  // data?: ITask[];
+  data?: ISummary;
 }
 
 interface PropsType<FormDataType extends FieldValues> {

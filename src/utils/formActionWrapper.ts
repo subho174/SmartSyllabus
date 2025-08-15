@@ -1,7 +1,7 @@
 import z from "zod";
 import { initialStateType } from "../components/forms/HandleServerAction";
 
-const serverWrapper = (
+const formActionWrapper = (
   fn: (
     prevState: initialStateType,
     formData: FormData
@@ -31,4 +31,4 @@ const serverWrapper = (
   };
 };
 
-export default serverWrapper;
+export default formActionWrapper;
