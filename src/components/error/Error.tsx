@@ -4,7 +4,7 @@ import { Button } from "@heroui/button";
 import { QueryObserverResult, RefetchOptions } from "@tanstack/react-query";
 import { AxiosError } from "axios";
 
-const SummaryError = ({
+const Error = ({
   error,
   refetch,
 }: {
@@ -53,4 +53,4 @@ const SummaryError = ({
   );
 };
 
-export default SummaryError;
+export default Error;

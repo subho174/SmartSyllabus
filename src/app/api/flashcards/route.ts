@@ -1,5 +1,5 @@
 import connectDB from "@/src/db/connectDB";
-import Summary from "@/src/models/summary.model";
+import FlashCard from "@/src/models/flashcard.model";
 import getAuthenticatedUser from "@/src/utils/getAuthenticatedUser";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -9,7 +9,6 @@ export const GET = async (req: NextRequest) => {
     const topicId = searchParams.get("topicId");
 
     const user = await getAuthenticatedUser();
-
     if (!user)
       return NextResponse.json(
         { message: "Unauthorized. Please Login" },
@@ -18,18 +17,18 @@ export const GET = async (req: NextRequest) => {
 
     await connectDB();
 
-    const summaries = await Summary.find({ topicId })
+    const flashcards = await FlashCard.find({ topicId })
       .select("-topicId -__v")
       .lean();
 
-    if (!summaries)
+    if (!flashcards)
       return NextResponse.json(
-        { message: "Failed to fetch summaries" },
+        { message: "Failed to fetch flashcards" },
         { status: 404 }
       );
 
     return NextResponse.json(
-      { message: "Summaries fetched successfully", data: summaries },
+      { message: "Flashcards fetched successfully", data: flashcards },
       { status: 200 }
     );
   } catch (error) {

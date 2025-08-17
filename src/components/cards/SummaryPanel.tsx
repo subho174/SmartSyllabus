@@ -1,37 +1,24 @@
 "use client";
 
-import React, { useEffect, useState, useTransition } from "react";
+import React, { useCallback, useEffect, useState, useTransition } from "react";
 import { motion } from "framer-motion";
 import { Card, CardBody, CardHeader } from "@heroui/card";
-import {
-  CheckCircleIcon,
-  Loader2,
-  Save,
-  SparklesIcon,
-  Trash,
-} from "lucide-react";
+import { CheckCircleIcon, SparklesIcon } from "lucide-react";
 import { Button } from "@heroui/button";
 import {
   deleteSummary,
   generateSummary,
   saveSummary,
-} from "@/src/actions/server";
+} from "@/src/actions/summary";
 import { ISummary } from "@/src/types/summary";
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
 import { toast } from "sonner";
-import {
-  Modal,
-  ModalBody,
-  ModalContent,
-  ModalFooter,
-  ModalHeader,
-  Pagination,
-  useDisclosure,
-} from "@heroui/react";
+import { Pagination, useDisclosure } from "@heroui/react";
 import SummaryLoader from "../loader/SummaryLoader";
-import SummaryError from "../error/SummaryError";
+import SummaryError from "../error/Error";
 import WarningModal from "./WarningModal";
+import SharedCTA from "@/src/components/cards/SharedCTA";
 
 export function SummaryPanel({
   topicId,
@@ -68,13 +55,20 @@ export function SummaryPanel({
     if (data) setsummaries(data.data);
   }, [data]);
 
-  const disableButtons = () =>
-    isPendingGeneration || isPendingSave || isPendingDelete;
+  const disableButtons = useCallback(
+    () => isPendingGeneration || isPendingSave || isPendingDelete,
+    [isPendingGeneration, isPendingSave, isPendingDelete]
+  );
 
-  const handleGenerateSummary = () => {
+  const handleGenerateSummary = useCallback(() => {
     startGenerateTransition(async () => {
       try {
         const result = await generateSummary(title);
+        if ("status" in result) {
+          toast.error(result.message || "Failed to generate summary");
+          return;
+        }
+
         if (result.keyPoints?.length === 0 && result.takeAways?.length === 0) {
           toast.error("Failed to generate summary");
           return;
@@ -92,9 +86,9 @@ export function SummaryPanel({
         toast.error("Failed to generate summary");
       }
     });
-  };
+  }, [startGenerateTransition, title]);
 
-  const handleSaveSummary = () => {
+  const handleSaveSummary = useCallback(() => {
     const savedSummaries = summaries.filter((summary) => summary._id);
 
     if (savedSummaries.length >= 3) {
@@ -104,60 +98,60 @@ export function SummaryPanel({
 
     startSaveTransition(async () => {
       try {
-        const result = await saveSummary(summaries[index], topicId);
+        const { data, message } = await saveSummary(summaries[index], topicId);
 
-        if (!result.data) {
-          toast.error(result.message);
+        if (!data) {
+          toast.error(message);
           return;
         }
 
         setsummaries((prev) => {
           const updated = [...prev];
-          updated[index] = result.data!;
+          updated[index] = data as ISummary;
           return updated;
         });
 
-        toast.success(result.message);
+        toast.success(message);
       } catch (err) {
         console.error("Failed to save summary", err);
         toast.error("Failed to save summary");
       }
     });
-  };
+  }, [summaries, index, topicId, onOpen, startSaveTransition]);
 
-  const handleDeleteSummary = () => {
+  const handleDeleteSummary = useCallback(() => {
     startDeleteTransition(async () => {
       try {
-        const result = await deleteSummary(summaries[index]._id!);
+        const { data, message } = await deleteSummary(summaries[index]._id!);
 
-        if (!result.data) {
-          toast.error(result.message);
+        if (!data) {
+          toast.error(message);
           return;
         }
 
         setsummaries(() => {
           const updated = summaries.filter(
-            (summary) => summary._id !== result.data?._id
+            (summary) => summary._id !== data?._id
           );
           return updated;
         });
 
         setindex((prev) => (prev === summaries.length - 1 ? prev - 1 : prev));
 
-        toast.success("Summary deleted successfully");
+        toast.success(message);
       } catch (err) {
         console.error("Failed to delete summary", err);
         toast.error("Failed to delete summary");
       }
     });
-  };
+  }, [startDeleteTransition, summaries, index]);
 
   if (isPending) return <SummaryLoader />;
   if (isError) return <SummaryError error={error} refetch={refetch} />;
 
   return (
     <>
-      <WarningModal isOpen={isOpen} onClose={onClose} />
+      <WarningModal isOpen={isOpen} onClose={onClose} itemType="Summary" />
       <Card className="relative overflow-hidden border-none bg-gradient-to-b mt-4 from-muted/40 to-background shadow-sm">
         {/* Background accents */}
         <div aria-hidden className="pointer-events-none absolute inset-0">
@@ -214,74 +208,17 @@ export function SummaryPanel({
                   </motion.div>
                 )}
 
-              <div className="flex mx-3 justify-end mt-4 gap-4">
-                {/* Regenerate Button */}
-                <Button
-                  onClick={handleGenerateSummary}
-                  isDisabled={disableButtons()}
-                  variant="flat"
-                  className="self-center"
-                >
-                  {isPendingGeneration ? (
-                    <>
-                      <Loader2 className="animate-spin" />
-                      Regenerating…
-                    </>
-                  ) : (
-                    <>
-                      <span className="mr-1 inline-flex">
-                        <SparklesIcon className="h-5 w-5 transition-transform group-hover:rotate-90" />
-                      </span>
-                      Regenerate
-                    </>
-                  )}
-                </Button>
-
-                <Button
-                  onClick={handleSaveSummary}
-                  isDisabled={disableButtons()}
-                  variant="flat"
-                  hidden={!!summaries[index]._id}
-                  className="self-center"
-                >
-                  {isPendingSave ? (
-                    <>
-                      <Loader2 className="animate-spin" />
-                      Saving…
-                    </>
-                  ) : (
-                    <>
-                      <span className="mr-1 inline-flex">
-                        <Save className="h-5 w-5" />
-                      </span>
-                      Save
-                    </>
-                  )}
-                </Button>
-
-                <Button
-                  onClick={handleDeleteSummary}
-                  isDisabled={disableButtons()}
-                  color="danger"
-                  variant="bordered"
-                  hidden={!summaries[index]._id}
-                  className="self-center"
-                >
-                  {isPendingDelete ? (
-                    <>
-                      <Loader2 className="animate-spin" />
-                      Deleting…
-                    </>
-                  ) : (
-                    <>
-                      <span className="mr-1 inline-flex">
-                        <Trash className="h-5 w-5" />
-                      </span>
-                      Delete
-                    </>
-                  )}
-                </Button>
-              </div>
+              <SharedCTA
+                isPendingGeneration={isPendingGeneration}
+                generateHandler={handleGenerateSummary}
+                isPendingSave={isPendingSave}
+                saveHandler={handleSaveSummary}
+                isPendingDelete={isPendingDelete}
+                deleteHandler={handleDeleteSummary}
+                disableButtons={disableButtons}
+                items={summaries}
+                index={index}
+              />
 
               <Pagination
                 page={index + 1}
@@ -323,21 +260,15 @@ export function SummaryPanel({
                 <Button
                   onClick={handleGenerateSummary}
                   isDisabled={disableButtons()}
+                  isLoading={isPendingGeneration}
+                  startContent={
+                    !isPendingGeneration && (
+                      <SparklesIcon className="h-5 w-5 transition-transform group-hover:rotate-90" />
+                    )
+                  }
                   className="group h-11 rounded-2xl px-5 text-base shadow-md"
                 >
-                  {isPendingGeneration ? (
-                    <>
-                      <Loader2 className="animate-spin" />
-                      Generating…
-                    </>
-                  ) : (
-                    <>
-                      <span className="mr-1 inline-flex">
-                        <SparklesIcon className="h-5 w-5 transition-transform group-hover:rotate-90" />
-                      </span>
-                      Generate Summary
-                    </>
-                  )}
+                  {isPendingGeneration ? "Generating.." : "Generate Summary"}
                 </Button>
               </motion.div>
             </CardBody>

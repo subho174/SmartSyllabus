@@ -2,7 +2,7 @@
 
 import HandleServerAction from "@/src/components/forms/HandleServerAction";
 import { topicSchema, TopicSchemaType } from "@/src/schemas/topicSchema";
-import { addTopic } from "@/src/actions/server";
+import { addTopic } from "@/src/actions/course";
 import { Input } from "@heroui/input";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Controller, useForm } from "react-hook-form";

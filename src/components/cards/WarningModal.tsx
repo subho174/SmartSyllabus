@@ -1,5 +1,5 @@
 import {
-    Button,
+  Button,
   Modal,
   ModalBody,
   ModalContent,
@@ -10,9 +10,11 @@ import {
 const WarningModal = ({
   isOpen,
   onClose,
+  itemType,
 }: {
   isOpen: boolean;
   onClose: () => void;
+  itemType: "Summary" | "Flashcard";
 }) => {
   return (
     <Modal
@@ -29,10 +31,17 @@ const WarningModal = ({
               Warning
             </ModalHeader>
             <ModalBody>
-              <p>
-                You can save at most 3 summaries for each topic. Please delete
-                saved summary to save new one.
-              </p>
+              {itemType === "Summary" ? (
+                <p>
+                  You can save at most 3 summaries for each topic. Please delete
+                  saved summary to save new one.
+                </p>
+              ) : (
+                <p>
+                  You can save at most 10 flashacards for each topic. Please
+                  delete saved flashcard to save new one.
+                </p>
+              )}
             </ModalBody>
             <ModalFooter>
               <Button color="danger" variant="light" onPress={onClose}>

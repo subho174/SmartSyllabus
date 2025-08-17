@@ -14,10 +14,11 @@ import {
 } from "@heroui/react";
 import { FieldValues, type UseFormReturn } from "react-hook-form";
 import { ISummary } from "@/src/types/summary";
+import { IFlashcard } from "@/src/types/flashcard";
 export interface initialStateType {
   message: string;
   status: number;
-  data?: ISummary;
+  data?: ISummary | IFlashcard;
 }
 
 interface PropsType<FormDataType extends FieldValues> {
@@ -27,7 +28,7 @@ interface PropsType<FormDataType extends FieldValues> {
     prevState: initialStateType,
     formData: FormData
   ) => Promise<initialStateType>;
-  form: UseFormReturn<FormDataType>,
+  form: UseFormReturn<FormDataType>;
   modalHeaderText: string;
   btnText: string;
   loadingBtnText: string;
@@ -91,9 +92,7 @@ export default function HandleServerAction<FormDataType extends FieldValues>({
               <ModalHeader className="flex flex-col gap-1">
                 {modalHeaderText}
               </ModalHeader>
-              <ModalBody>
-                {children}
-              </ModalBody>
+              <ModalBody>{children}</ModalBody>
               <ModalFooter>
                 <Button
                   color="danger"
